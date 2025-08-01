@@ -23,21 +23,33 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
-           cache-disabled: true
+          cache-disabled: true
 
       - name: Build F-Droid Release APK
         run: ./gradlew assembleFdroidFullRelease
 
-      - name: Create output folder
-        run: mkdir -p app/build/outputs/apk/fdroidFull/release
+      - name: Decode keystore from secret
+        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > rethink-release-key.jks
 
-      - name: Upload release APK
+      - name: Sign APK with apksigner
+        run: |
+          ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign \
+            --ks rethink-release-key.jks \
+            --ks-key-alias ${{ secrets.KEY_ALIAS }} \
+            --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
+            --key-pass pass:${{ secrets.KEY_PASSWORD }} \
+            app/build/outputs/apk/fdroidFull/release/app-fdroid-full-release-unsigned.apk
+
+      - name: Verify APK signature
+        run: |
+          ${ANDROID_HOME}/build-tools/34.0.0/apksigner verify \
+            app/build/outputs/apk/fdroidFull/release/app-fdroid-full-release-unsigned.apk
+
+      - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
           name: rethink-fdroid-release
-          path: app/build/outputs/apk/fdroidFull/release/*.apk
+          path: app/build/outputs/apk/fdroidFull/release/app-fdroid-full-release-unsigned.apk
 
-      - name: List APK files
+      - name: List all APKs (debugging)
         run: find app/build -type f -name "*.apk"
-
-      
