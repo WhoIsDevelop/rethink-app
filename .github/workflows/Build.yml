@@ -22,6 +22,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
+        with:
+           cache-disabled: true
 
       - name: Build F-Droid Release APK
         run: ./gradlew assembleFdroidRelease
