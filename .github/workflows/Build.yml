@@ -29,13 +29,13 @@ jobs:
         run: ./gradlew assembleFdroidFullRelease
 
       - name: Create output folder
-        run: mkdir -p app/build
+        run: mkdir -p app/build/outputs/apk/fdroidFull/release
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: rethink-fdroid-release
-          path: app/build/*.apk
+          path: app/build/outputs/apk/fdroidFull/release/*.apk
 
       - name: List APK files
         run: find app/build -type f -name "*.apk"
